@@ -9,6 +9,7 @@ import com.binance.api.client.domain.market.CandlestickInterval;
 
 import java.io.Closeable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Binance API data streaming façade, supporting streaming of events through web sockets.
@@ -59,6 +60,15 @@ public interface BinanceApiWebSocketClient extends Closeable {
      * @return a {@link Closeable} that allows the underlying web socket to be closed.
      */
     Closeable onAllMarketTickersEvent(BinanceApiCallback<List<AllMarketTickersEvent>> callback);
+
+    /**
+     * Open a new web socket to receive combination stream events on a callback.
+     *
+     * @param streams   market streams join by /, for example: <streamName1>/<streamName2>/<streamName3>
+     * @param callback the callback to call on new events
+     * @return a {@link Closeable} that allows the underlying web socket to be closed.
+     */
+    Closeable onStreamsEvent(String streams, BinanceApiCallback<Map<String, Object>> callback);
 
     /**
      * @deprecated This method is no longer functional. Please use the returned {@link Closeable} from any of the other methods to close the web socket.

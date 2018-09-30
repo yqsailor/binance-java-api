@@ -18,6 +18,7 @@ import okhttp3.WebSocket;
 import java.io.Closeable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +67,11 @@ public class BinanceApiWebSocketClientImpl implements BinanceApiWebSocketClient,
         return createNewWebSocket(channel, new BinanceApiWebSocketListener<>(callback, new TypeReference<List<AllMarketTickersEvent>>() {}));
     }
 
+    public Closeable onStreamsEvent(final String streams, BinanceApiCallback<Map<String, Object>> callback) {
+        final String channel = String.format("stream?streams=%s", streams);
+        return createNewWebSocket(channel, new BinanceApiWebSocketListener<>(callback, new TypeReference<Map<String, Object>>() {}));
+    }
+
     /**
      * @deprecated This method is no longer functional. Please use the returned {@link Closeable} from any of the other methods to close the web socket.
      */
@@ -73,7 +79,12 @@ public class BinanceApiWebSocketClientImpl implements BinanceApiWebSocketClient,
     public void close() { }
 
     private Closeable createNewWebSocket(String channel, BinanceApiWebSocketListener<?> listener) {
-        String streamingUrl = String.format("%s/%s", BinanceApiConstants.WS_API_BASE_URL, channel);
+        String streamingUrl;
+        if (!channel.startsWith("stream")) {
+            streamingUrl = String.format("%s/ws/%s", BinanceApiConstants.WS_API_BASE_URL, channel);
+        } else {
+            streamingUrl = String.format("%s/%s", BinanceApiConstants.WS_API_BASE_URL, channel);
+        }
         Request request = new Request.Builder().url(streamingUrl).build();
         final WebSocket webSocket = client.newWebSocket(request, listener);
         return () -> {
